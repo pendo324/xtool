@@ -210,6 +210,11 @@ struct SDKBuilder {
         // extraCLIOptions are passed to the linker verbatim, but ld64.lld
         // resolves -L arguments against the SDK it was given via -syslibroot,
         // so the plain /usr/lib/swift works wherever the bundle is installed.
+        //
+        // Cross-import overlays are on by default in Xcode, and the legacy
+        // toolset above enables them too. SwiftPM only passes the flag for
+        // test targets, so without it overlays such as _PhotosUI_SwiftUI
+        // (PhotosPicker) and _StoreKit_SwiftUI (StoreView) don't resolve.
         try """
         {
             "schemaVersion": "1.0",
@@ -224,6 +229,11 @@ struct SDKBuilder {
             },
             "librarian": {
                 "path": "llvm-lib"
+            },
+            "swiftCompiler": {
+                "extraCLIOptions": [
+                    "-Xfrontend", "-enable-cross-import-overlays"
+                ]
             }
         }
         """.write(
